@@ -40,11 +40,9 @@ Module.register("MMM-MenuViewer",{
     var today = moment();
     if (today.hour() >= 12) {
       var todayFormatted = today.add(1, 'day').format('MM-DD-YYYY');
-      console.log(todayFormatted);
     }
     else {
       var todayFormatted = today.format('MM-DD-YYYY');
-      console.log(todayFormatted);
     }
     //var endDay = today.add(config.showDays, 'days');
     //var endDayFormatted = endDay.format('MM-DD-YYYY');
@@ -123,7 +121,13 @@ Module.register("MMM-MenuViewer",{
 
                     foodItemNameCell = document.createElement("td");
                     foodItemNameCell.className = "fooditemname bright";
-                    foodItemNameCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name;
+
+                    if (today.hour() >= 12 && this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name === 'NO SCHOOL TODAY') {
+                      foodItemNameCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name.replace("TODAY", "TOMORROW");
+                    }
+                    else {
+                      foodItemNameCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name;
+                    }
 
                     foodItemRow.appendChild(foodItemTypeCell);
                     foodItemRow.appendChild(foodItemNameCell);
@@ -138,8 +142,14 @@ Module.register("MMM-MenuViewer",{
 
                     foodItemNameCell = document.createElement("td");
                     foodItemNameCell.className = "fooditemname bright";
-                    foodItemNameCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name;
 
+                    if (today.hour() >= 12 && this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name === 'NO SCHOOL TODAY') {
+                      foodItemNameCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name.replace("TODAY", "TOMORROW");
+                    }
+                    else {
+                      foodItemNameCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name;
+                    }
+                    
                     foodItemRow.appendChild(foodItemTypeCell);
                     foodItemRow.appendChild(foodItemNameCell);
                     wrapper.appendChild(foodItemRow);
