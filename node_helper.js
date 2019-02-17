@@ -4,6 +4,7 @@
  * Module: MMM-MenuViewer
  *
  * Dispays school lunch menu information from mealviewer.com
+ * (today if before noon; tomorrow if after noon)
  *
  * By Jerry Kazanjian kazanjig@gmail.com
  * v1.0 2019/02/17
@@ -32,18 +33,17 @@ module.exports = NodeHelper.create({
       request({
         url: urls[i].url,
         method: 'GET'
-      },
-      (error, response, body) => {
+      }, (error, response, body) => {
         if (!error && response.statusCode === 200) {
+          console.log(body);
           var result = JSON.parse(body);
+          results.push(result);
         }
-        results.push(result);
         _this.count++;
 
         if (_this.count === urls.length) {
           _this.sendSocketNotification('GOT-MENU-DATA', results);
         }
-        console.log(results);
       });
     }
   },

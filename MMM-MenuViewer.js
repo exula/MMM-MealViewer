@@ -4,6 +4,7 @@
  * Module: MMM-MenuViewer
  *
  * Dispays school lunch menu information from mealviewer.com
+ * (today if before noon; tomorrow if after noon)
  *
  * By Jerry Kazanjian kazanjig@gmail.com
  * v1.0 2019/02/17
@@ -13,7 +14,7 @@
 Module.register("MMM-MenuViewer",{
   defaults: {
     schools: [],
-    showDays: 0,
+    //showDays: 2,
     maxWidth: "300px",
     useHeader: false,
     updateInterval: 5 * 60 * 1000,
@@ -24,9 +25,9 @@ Module.register("MMM-MenuViewer",{
     interval: 900000,  	// 15 minutes
   },
 
-  /*getStyles: function() {
-      return ["MMM-MenuViewer.css", 'font-awesome.css'];
-},*/
+  getStyles: function() {
+      return ["MenuViewer.css", 'font-awesome.css'];
+  },
 
   getScripts: function() {
     return ["moment.js"];
@@ -36,17 +37,24 @@ Module.register("MMM-MenuViewer",{
     Log.log('Starting module: ' + this.name);
 
     // Set up the local values
-    var today = moment(new Date());
-    var todayFormatted = today.format('MM-DD-YYYY');
-    var endDay = today.add(config.showDays, 'days');
-    var endDayFormatted = endDay.format('MM-DD-YYYY');
+    var today = moment();
+    if (today.hour() >= 12) {
+      var todayFormatted = today.add(1, 'day').format('MM-DD-YYYY');
+      console.log(todayFormatted);
+    }
+    else {
+      var todayFormatted = today.format('MM-DD-YYYY');
+      console.log(todayFormatted);
+    }
+    //var endDay = today.add(config.showDays, 'days');
+    //var endDayFormatted = endDay.format('MM-DD-YYYY');
+    var endDayFormatted = todayFormatted;
     this.loaded = false;
     this.urls = [];
 
     for (var i in this.config.schools) {
 			this.urls.push({school: this.config.schools[i], url: 'https://api.mealviewer.com/api/v4/school/' + this.config.schools[i] + '/' + todayFormatted + '/' + endDayFormatted + '/'});
     }
-    console.log(this.urls);
 
     // Initialize results array
     this.results = [];
@@ -65,61 +73,94 @@ Module.register("MMM-MenuViewer",{
     // Set up the local wrapper
     var wrapper = null;
 
-    // If we have some data to display then build the results table
-    if (this.loaded) {
-      wrapper = document.createElement("table");
+    var today = moment();
+    if (today.hour() >= 12) {
+      today = today.add(1, 'day');
+    }
 
-      // Iterate through the schools
-      for (var i = 0; i < this.results.length; i++) {
+    // Determine if it's a weekday
+    if (today.day() > 0 && today.day() < 6) {
 
-        console.log('i = ' + i);
+      // If we have some data to display then build the results table
+      if (this.loaded) {
+        wrapper = document.createElement("table");
 
-        // Set up header row with the school name
-        schoolRow = document.createElement("tr");
+        // Iterate through the schools
+        for (var i = 0; i < this.results.length; i++) {
 
-        schoolName = document.createElement("td");
-        schoolName.innerHTML = this.results[i].physicalLocation.name;
-        console.log(schoolName.innerHTML);
+          // Iterate through the cafeteria lines for the school
+          for (var j = 0; j < this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data.length; j++) {
 
-        schoolRow.appendChild(schoolName);
+            if (this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].name !== 'Elmwood Vegetarian Hot Entree') {
 
-        // Iterate through the cafeteris lines for the school
-        for (var j = 0; j < this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data.length; j++) {
+              // Set up header row with the cafeteria line name
+              cafeteriaLineRow = document.createElement("tr");
 
-          console.log('j = ' + j);
+              cafeteriaLineName = document.createElement("td");
+              cafeteriaLineName.colSpan = 2;
+              cafeteriaLineName.className = "cafeterialine";
+              cafeteriaLineName.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].name.replace("Elmwood Elementary", "Elementary Lunch").replace("Elmwood Alternative", "Elementary Alternative");
 
-          // Set up header row with the cafeteria line name
-          cafeteriaLineRow = document.createElement("tr");
+              cafeteriaLineRow.appendChild(cafeteriaLineName);
+              wrapper.appendChild(cafeteriaLineRow);
 
-          cafeteriaLineName = document.createElement("td");
-          cafeteriaLineName.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].name;
+              foodItemTypePrev = '';
 
-          cafeteriaLineRow.appendChild(cafeteriaLineName);
+              // Iterate through the menu items for the cafeteria line
+              for (var k = 0; k < this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data.length; k++) {
 
-          // Iterate through the menu items for the cafeteria line
-          for (var k = 0; k < this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data.length; k++) {
+                if (this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name !== 'Choice Of:') {
 
-            console.log('k = ' + k);
+                  if (this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Type !== foodItemTypePrev) {
 
-            foodItemRow = document.createElement("tr");
+                    foodItemRow = document.createElement("tr");
 
-            foodItemType = document.createElement("td");
-            foodItemType.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Type;
+                    foodItemTypeCell = document.createElement("td");
+                    foodItemTypeCell.className = "fooditemtype";
+                    foodItemTypeCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Type;
 
-            foodItemName = document.createElement("td");
-            foodItemName.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name;
+                    foodItemTypePrev = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Type;
 
-            foodItemRow.appendChild(foodItemType);
-            foodItemRow.appendChild(foodItemName);
+                    foodItemNameCell = document.createElement("td");
+                    foodItemNameCell.className = "fooditemname bright";
+                    foodItemNameCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name;
+
+                    foodItemRow.appendChild(foodItemTypeCell);
+                    foodItemRow.appendChild(foodItemNameCell);
+                    wrapper.appendChild(foodItemRow);
+                  }
+                  else {
+
+                    foodItemRow = document.createElement("tr");
+
+                    foodItemTypeCell = document.createElement("td");
+                    foodItemTypeCell.innerHTML = '';
+
+                    foodItemNameCell = document.createElement("td");
+                    foodItemNameCell.className = "fooditemname bright";
+                    foodItemNameCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name;
+
+                    foodItemRow.appendChild(foodItemTypeCell);
+                    foodItemRow.appendChild(foodItemNameCell);
+                    wrapper.appendChild(foodItemRow);
+                  }
+                }
+              }
+            }
           }
         }
+      }
+
+      else {
+        // Otherwise lets just use a simple div
+        wrapper = document.createElement('div');
+        wrapper.innerHTML = 'Loading menu data...';
       }
     }
 
     else {
-      // Otherwise lets just use a simple div
       wrapper = document.createElement('div');
-      wrapper.innerHTML = 'Loading menu data...';
+      wrapper.innerHTML = 'Enjoy the weekend!';
     }
 
     return wrapper;
@@ -127,11 +168,11 @@ Module.register("MMM-MenuViewer",{
 
   socketNotificationReceived: function(notification, payload) {
     if (notification === 'GOT-MENU-DATA') {
-      console.log("returned back to main got menu data");
+      console.log('GOT-MENU-DATA received');
       this.loaded = true;
       this.results = payload;
-      console.log(this.results);
       this.updateDom(1000);
+      console.log('updated DOM');
     }
   }
 });
