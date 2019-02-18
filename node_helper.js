@@ -29,13 +29,13 @@ module.exports = NodeHelper.create({
 
     var _this = this;
 
+    // Iterate through the URLs for the schools and push result to results array
     for (var i = 0; i < urls.length; i++){
       request({
         url: urls[i].url,
         method: 'GET'
       }, (error, response, body) => {
         if (!error && response.statusCode === 200) {
-          console.log(body);
           var result = JSON.parse(body);
           results.push(result);
         }
