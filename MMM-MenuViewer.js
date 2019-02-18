@@ -27,6 +27,14 @@ Module.register("MMM-MenuViewer",{
     return ["moment.js"];
   },
 
+  // Override getHeader method to display today/tomorrow
+	getHeader: function() {
+    if (moment().hour() >= 12) {
+			return "Tomorrow's " + this.data.header;
+		}
+		return this.data.header;
+	},
+
   start:  function() {
     Log.log('Starting module: ' + this.name);
 
@@ -80,7 +88,7 @@ Module.register("MMM-MenuViewer",{
       // If we have some data to display then build the results table
       if (this.loaded) {
         wrapper = document.createElement("table");
-        wrapper.className = "menuviewer";
+        wrapper.className = "wrapper";
 
         // Iterate through the schools
         for (var i = 0; i < this.results.length; i++) {
@@ -96,7 +104,7 @@ Module.register("MMM-MenuViewer",{
 
               cafeteriaLineName = document.createElement("td");
               cafeteriaLineName.colSpan = 2;
-              cafeteriaLineName.className = "cafeterialine";
+              cafeteriaLineName.className = "wrapper small";
               cafeteriaLineName.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].name.replace("Elmwood Elementary", "Elementary Lunch").replace("Elmwood Alternative", "Elementary Alternative");
 
               cafeteriaLineRow.appendChild(cafeteriaLineName);
@@ -121,7 +129,7 @@ Module.register("MMM-MenuViewer",{
                     foodItemRow = document.createElement("tr");
 
                     foodItemTypeCell = document.createElement("td");
-                    foodItemTypeCell.className = "fooditemtype";
+                    foodItemTypeCell.className = "wrapper xsmall align-right";
                     foodItemTypeCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Type;
 
                     foodItemTypePrev = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Type;
@@ -135,7 +143,7 @@ Module.register("MMM-MenuViewer",{
                   }
 
                   foodItemNameCell = document.createElement("td");
-                  foodItemNameCell.className = "fooditemname bright";
+                  foodItemNameCell.className = "wrapper xsmall align-right";
                   foodItemNameCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name;
 
                   foodItemRow.appendChild(foodItemTypeCell);
