@@ -3,11 +3,10 @@
 /* Magic Mirror
  * Module: MMM-MenuViewer
  *
- * Dispays school lunch menu information from mealviewer.com
- * (today if before noon; tomorrow if after noon)
+ * A Magic Mirror Module to pull school lunch menu data from mealviewer.com
  *
  * By Jerry Kazanjian kazanjig@gmail.com
- * v1.0 2019/02/17
+ * v1.1 2019/02/20
  * MIT Licensed.
  */
 

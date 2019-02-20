@@ -3,11 +3,10 @@
 /* Magic Mirror
  * Module: MMM-MenuViewer
  *
- * Dispays school lunch menu information from mealviewer.com
- * (today if before noon; tomorrow if after noon)
+ * A Magic Mirror Module to pull school lunch menu data from mealviewer.com
  *
  * By Jerry Kazanjian kazanjig@gmail.com
- * v1.0 2019/02/17
+ * v1.1 2019/02/20
  * MIT Licensed.
  */
 
@@ -118,11 +117,6 @@ Module.register("MMM-MenuViewer",{
                 // The menu returns "Choice of" as an entree option; removing it for neater display
                 if (this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name !== 'Choice Of:') {
 
-                  // If there's no school on a weekday, manipulate "today" text as "tomorrow" if previous day after noon
-                  if (today.hour() >= 12 && this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name === 'NO SCHOOL TODAY') {
-                    this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name.replace("TODAY", "TOMORROW");
-                  }
-
                   // Set up row with the menu item type only if it's the first time we've seen the item type (e.g., entree)
                   if (this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Type !== foodItemTypePrev) {
 
@@ -144,7 +138,14 @@ Module.register("MMM-MenuViewer",{
 
                   foodItemNameCell = document.createElement("td");
                   foodItemNameCell.className = "wrapper xsmall align-right";
-                  foodItemNameCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name;
+
+                  // If there's no school on a weekday, manipulate "today" text as "tomorrow" if previous day after noon
+                  if (today.hour() >= 12 && this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name == 'NO SCHOOL TODAY') {
+                    foodItemNameCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name.replace("TODAY", "TOMORROW");
+                  }
+                  else {
+                    foodItemNameCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name;
+                  }
 
                   foodItemRow.appendChild(foodItemTypeCell);
                   foodItemRow.appendChild(foodItemNameCell);
@@ -160,7 +161,8 @@ Module.register("MMM-MenuViewer",{
       else {
         // While the data is loading
         wrapper = document.createElement('div');
-        wrapper.innerHTML = 'Loading menu data...';
+        wrapper.innerHTML = this.translate("LOADING");
+        wrapper.className = "dimmed light small";
       }
     }
 
