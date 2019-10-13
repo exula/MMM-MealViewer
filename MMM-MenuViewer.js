@@ -13,6 +13,7 @@
 Module.register("MMM-MenuViewer",{
   defaults: {
     schools: [],
+    shortName: "",
     maxWidth: "300px",
     updateInterval: 5 * 60 * 1000,
     interval: 1000 * 60 * 15,
@@ -96,7 +97,7 @@ Module.register("MMM-MenuViewer",{
           for (var j = 0; j < this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data.length; j++) {
 
             // My kids aren't interested in the vegetarian line; removing it for neater display
-            if (this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].name !== 'Elmwood Vegetarian Hot Entree') {
+            if (this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].name !== shortName + ' Vegetarian Hot Entree') {
 
               // Set up header row with the cafeteria line name
               cafeteriaLineRow = document.createElement("tr");
@@ -104,7 +105,7 @@ Module.register("MMM-MenuViewer",{
               cafeteriaLineName = document.createElement("td");
               cafeteriaLineName.colSpan = 2;
               cafeteriaLineName.className = "wrapper small";
-              cafeteriaLineName.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].name.replace("Elmwood Elementary", "Elementary Lunch").replace("Elmwood Alternative", "Elementary Alternative");
+              cafeteriaLineName.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].name.replace(shortName + " Elementary", "Elementary Lunch").replace(shortName + " Alternative", "Elementary Alternative");
 
               cafeteriaLineRow.appendChild(cafeteriaLineName);
               wrapper.appendChild(cafeteriaLineRow);
