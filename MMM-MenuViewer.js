@@ -109,7 +109,6 @@ Module.register("MMM-MenuViewer",{
 
           //Iterate through the meals and only add for configured meals (match on text from config) default is ALL
 		  for (var l = 0; l < this.results[i].menuSchedules[0].menuBlocks.length; l++) {
-			  	console.error("ShowMeal: " + this.config.showMeal);
       			  if (this.results[i].menuSchedules[0].menuBlocks[l].blockName == this.config.showMeal || this.config.showMeal == "") {
      						
      						// Set up header row with the meal name if we are showing all meals
