@@ -8,6 +8,12 @@
  * By Jerry Kazanjian kazanjig@gmail.com
  * v1.1 2019/02/20
  * MIT Licensed.
+ * 
+ * v1.2 2019/10/14 -NG
+ *  added shortName to config to replace text based on config option instead of hardcoded
+ * 	changed className to menuWrapper to allow for style control without interfering with other modules
+ *	added config option for showing single or multiple meals based on name, default is All
+ *
  */
 
 Module.register("MMM-MenuViewer",{
@@ -17,7 +23,8 @@ Module.register("MMM-MenuViewer",{
     maxWidth: "300px",
     updateInterval: 5 * 60 * 1000,
     interval: 1000 * 60 * 15,
-  },
+    showMeal : "" //Display which meal, leave blank for all
+      },
 
   getStyles: function() {
       return ["menuviewer.css", 'font-awesome.css'];
@@ -29,10 +36,17 @@ Module.register("MMM-MenuViewer",{
 
   // Override getHeader method to display today/tomorrow
 	getHeader: function() {
-    if (moment().hour() >= 12) {
+		//Pick up info from what meals are being displayed
+		if (this.config.showMeal == ""){
+			this.data.header = "Meals"}
+			else
+			{
+			this.data.header = this.config.showMeal
+			}
+	    if (moment().hour() >= 12) {
 			return "Tomorrow's " + this.data.header;
 		}
-		return this.data.header;
+		return "Today's " + this.data.header;
 	},
 
   start:  function() {
@@ -93,71 +107,91 @@ Module.register("MMM-MenuViewer",{
         // Iterate through the schools
         for (var i = 0; i < this.results.length; i++) {
 
-          // Iterate through the cafeterialines[j] for school[i]
-          for (var j = 0; j < this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data.length; j++) {
+          //Iterate through the meals and only add for configured meals (match on text from config) default is ALL
+		  for (var l = 0; l < this.results[i].menuSchedules[0].menuBlocks.length; l++) {
+			  	console.error("ShowMeal: " + this.config.showMeal);
+      			  if (this.results[i].menuSchedules[0].menuBlocks[l].blockName == this.config.showMeal || this.config.showMeal == "") {
+     						
+     						// Set up header row with the meal name if we are showing all meals
+     						//We may want to revisit this for stlyizing in the future. 
+								if (this.config.showMeal == "") {
+     								cafeteriaLineRow = document.createElement("tr");
+									cafeteriaLineName = document.createElement("td");
+									cafeteriaLineName.colSpan = 2;
+									cafeteriaLineName.className = "menuWrapper small";
+									cafeteriaLineName.innerHTML = this.results[i].menuSchedules[0].menuBlocks[l].blockName;
+									cafeteriaLineRow.appendChild(cafeteriaLineName);
+									wrapper.appendChild(cafeteriaLineRow);
 
-            // My kids aren't interested in the vegetarian line; removing it for neater display
-            if (this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].name !== shortName + ' Vegetarian Hot Entree') {
+								}
+							// Iterate through the cafeterialines[j] for school[i]
+							for (var j = 0; j < this.results[i].menuSchedules[0].menuBlocks[l].cafeteriaLineList.data.length; j++) {
+								
+								// My kids aren't interested in the vegetarian line; removing it for neater display
+								if (this.results[i].menuSchedules[0].menuBlocks[l].cafeteriaLineList.data[j].name !== this.config.shortName  + ' Vegetarian Hot Entree') {
 
-              // Set up header row with the cafeteria line name
-              cafeteriaLineRow = document.createElement("tr");
+									// Set up header row with the cafeteria line name
+									//This isn't in every schol, but it might need to be moved for someone else. Not affecting my view -NG
+									cafeteriaLineRow = document.createElement("tr");
 
-              cafeteriaLineName = document.createElement("td");
-              cafeteriaLineName.colSpan = 2;
-              cafeteriaLineName.className = "menuWrapper small";
-              cafeteriaLineName.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].name.replace(shortName + " Elementary", "Elementary Lunch").replace(shortName + " Alternative", "Elementary Alternative");
+									cafeteriaLineName = document.createElement("td");
+									cafeteriaLineName.colSpan = 2;
+									cafeteriaLineName.className = "menuWrapper small";
+									cafeteriaLineName.innerHTML = this.results[i].menuSchedules[0].menuBlocks[l].cafeteriaLineList.data[j].name.replace(this.config.shortName  + " Elementary", "Elementary Lunch").replace(this.config.shortName  + " Alternative", "Elementary Alternative");
 
-              cafeteriaLineRow.appendChild(cafeteriaLineName);
-              wrapper.appendChild(cafeteriaLineRow);
+									cafeteriaLineRow.appendChild(cafeteriaLineName);
+									wrapper.appendChild(cafeteriaLineRow);
 
-              foodItemTypePrev = '';
+									foodItemTypePrev = '';
 
-              // Iterate through the menuitems[k] for the cafeterialine[j] for the school[i]
-              for (var k = 0; k < this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data.length; k++) {
+									// Iterate through the menuitems[k] for the cafeterialine[j] for the school[i]
+									for (var k = 0; k < this.results[i].menuSchedules[0].menuBlocks[l].cafeteriaLineList.data[j].foodItemList.data.length; k++) {
 
-                // The menu returns "Choice of" as an entree option; removing it for neater display
-                if (this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name !== 'Choice Of:') {
+										// The menu returns "Choice of" as an entree option; removing it for neater display
+										if (this.results[i].menuSchedules[0].menuBlocks[l].cafeteriaLineList.data[j].foodItemList.data[k].item_Name !== 'Choice Of:') {
 
-                  // Set up row with the menu item type only if it's the first time we've seen the item type (e.g., entree)
-                  if (this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Type !== foodItemTypePrev) {
+											// Set up row with the menu item type only if it's the first time we've seen the item type (e.g., entree)
+											if (this.results[i].menuSchedules[0].menuBlocks[l].cafeteriaLineList.data[j].foodItemList.data[k].item_Type !== foodItemTypePrev) {
 
-                    foodItemRow = document.createElement("tr");
+												foodItemRow = document.createElement("tr");
 
-                    foodItemTypeCell = document.createElement("td");
-                    foodItemTypeCell.className = "menuWrapper xsmall align-right";
-                    foodItemTypeCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Type;
+												foodItemTypeCell = document.createElement("td");
+												foodItemTypeCell.className = "menuWrapper xsmall align-right";
+												foodItemTypeCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[l].cafeteriaLineList.data[j].foodItemList.data[k].item_Type;
 
-                    foodItemTypePrev = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Type;
-                  }
+												foodItemTypePrev = this.results[i].menuSchedules[0].menuBlocks[l].cafeteriaLineList.data[j].foodItemList.data[k].item_Type;
+											}
 
-                  // If we've seen the item type previously, do not display it
-                  else {
-                    foodItemRow = document.createElement("tr");
-                    foodItemTypeCell = document.createElement("td");
-                    foodItemTypeCell.innerHTML = '';
-                  }
+											// If we've seen the item type previously, do not display it
+											else {
+												foodItemRow = document.createElement("tr");
+												foodItemTypeCell = document.createElement("td");
+												foodItemTypeCell.innerHTML = '';
+											}
 
-                  foodItemNameCell = document.createElement("td");
-                  foodItemNameCell.className = "menuWrapper xsmall align-right";
+											foodItemNameCell = document.createElement("td");
+											foodItemNameCell.className = "menuWrapper xsmall align-right";
 
-                  // If there's no school on a weekday, manipulate "today" text as "tomorrow" if previous day after noon
-                  if (today.hour() >= 12 && this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name == 'NO SCHOOL TODAY') {
-                    foodItemNameCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name.replace("TODAY", "TOMORROW");
-                  }
-                  else {
-                    foodItemNameCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name;
-                  }
+											// If there's no school on a weekday, manipulate "today" text as "tomorrow" if previous day after noon
+											if (today.hour() >= 12 && this.results[i].menuSchedules[0].menuBlocks[l].cafeteriaLineList.data[j].foodItemList.data[k].item_Name == 'NO SCHOOL TODAY') {
+												foodItemNameCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[l].cafeteriaLineList.data[j].foodItemList.data[k].item_Name.replace("TODAY", "TOMORROW");
+											}
+											else {
+												foodItemNameCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[l].cafeteriaLineList.data[j].foodItemList.data[k].item_Name;
+											}
 
-                  foodItemRow.appendChild(foodItemTypeCell);
-                  foodItemRow.appendChild(foodItemNameCell);
-                  wrapper.appendChild(foodItemRow);
+											foodItemRow.appendChild(foodItemTypeCell);
+											foodItemRow.appendChild(foodItemNameCell);
+											wrapper.appendChild(foodItemRow);
 
-                }
-              }
-            }
-          }
-        }
-      }
+                						}
+             						 }
+            					}
+          					}
+          				}
+        			}		 
+        		}
+      		}
 
       else {
         // While the data is loading
