@@ -88,7 +88,7 @@ Module.register("MMM-MenuViewer",{
       // If we have some data to display then build the results table
       if (this.loaded) {
         wrapper = document.createElement("table");
-        wrapper.className = "wrapper";
+        wrapper.className = "menuWrapper";
 
         // Iterate through the schools
         for (var i = 0; i < this.results.length; i++) {
@@ -104,7 +104,7 @@ Module.register("MMM-MenuViewer",{
 
               cafeteriaLineName = document.createElement("td");
               cafeteriaLineName.colSpan = 2;
-              cafeteriaLineName.className = "wrapper small";
+              cafeteriaLineName.className = "menuWrapper small";
               cafeteriaLineName.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].name.replace(shortName + " Elementary", "Elementary Lunch").replace(shortName + " Alternative", "Elementary Alternative");
 
               cafeteriaLineRow.appendChild(cafeteriaLineName);
@@ -124,7 +124,7 @@ Module.register("MMM-MenuViewer",{
                     foodItemRow = document.createElement("tr");
 
                     foodItemTypeCell = document.createElement("td");
-                    foodItemTypeCell.className = "wrapper xsmall align-right";
+                    foodItemTypeCell.className = "menuWrapper xsmall align-right";
                     foodItemTypeCell.innerHTML = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Type;
 
                     foodItemTypePrev = this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Type;
@@ -138,7 +138,7 @@ Module.register("MMM-MenuViewer",{
                   }
 
                   foodItemNameCell = document.createElement("td");
-                  foodItemNameCell.className = "wrapper xsmall align-right";
+                  foodItemNameCell.className = "menuWrapper xsmall align-right";
 
                   // If there's no school on a weekday, manipulate "today" text as "tomorrow" if previous day after noon
                   if (today.hour() >= 12 && this.results[i].menuSchedules[0].menuBlocks[0].cafeteriaLineList.data[j].foodItemList.data[k].item_Name == 'NO SCHOOL TODAY') {
