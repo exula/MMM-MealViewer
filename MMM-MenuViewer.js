@@ -165,6 +165,7 @@ Module.register("MMM-MenuViewer",{
 											else {
 												foodItemRow = document.createElement("tr");
 												foodItemTypeCell = document.createElement("td");
+												foodItemTypeCell.className = "menuWrapper xsmall align-right";
 												foodItemTypeCell.innerHTML = '';
 											}
 
