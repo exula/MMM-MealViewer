@@ -14,19 +14,24 @@
  * 	changed className to menuWrapper to allow for style control without interfering with other modules
  *	added config option for showing single or multiple meals based on name, default is All
  *
- */
+ * v1.3 2019/11/14- NG
+ *	fixed so that updates work. Moved URL setup code is in getMenuData and fixed the setTimeout to  * 	work correctly. Thanks sdetweil!
+  */
 
 Module.register("MMM-MenuViewer",{
   defaults: {
     schools: [],
     shortName: "",
     maxWidth: "300px",
-    updateInterval: 5 * 60 * 1000,
+    updateInterval: 15 * 60 * 1000,
     interval: 1000 * 60 * 15,
     showMeal : "" //Display which meal, leave blank for all
       },
 
+
+  
   getStyles: function() {
+	   
       return ["menuviewer.css", 'font-awesome.css'];
   },
 
@@ -34,8 +39,9 @@ Module.register("MMM-MenuViewer",{
     return ["moment.js"];
   },
 
+
   // Override getHeader method to display today/tomorrow
-	getHeader: function() {
+getHeader: function() {
 		//Pick up info from what meals are being displayed
 		if (this.config.showMeal == ""){
 			this.data.header = "Meals"}
@@ -48,15 +54,24 @@ Module.register("MMM-MenuViewer",{
 		}
 		return "Today's " + this.data.header;
 	},
-
   start:  function() {
-    Log.log('Starting module: ' + this.name);
+    console.log('Starting module: ' + this.name);
 
-    // Set up the local values
+	// Trigger the first request
+    //console.log(this.name + ': Running getMenuData')
+    
+    this.getMenuData(this);
+  },
+
+  getMenuData: function(_this) {
+  
+	//console.log (_this.name + ': Setting up to get menu data.');
+	
+	 // Set up the local values
     var today = moment();
-    this.loaded = false;
-    this.urls = [];
-    this.results = [];
+    _this.loaded = false;
+    _this.urls = [];
+    _this.results = [];
 
     // Uses now are today if before noon and tomorrow as today if after noon
     if (today.hour() >= 12) {
@@ -70,20 +85,28 @@ Module.register("MMM-MenuViewer",{
     //var endDay = today.add(config.showDays, 'days');
     //var endDayFormatted = endDay.format('MM-DD-YYYY');
     var endDayFormatted = todayFormatted;
-
+    
+	console.log(_this.name + ': Getting meal data for ' + todayFormatted)
+   
     // Construct the url array for the schools
-    for (var i in this.config.schools) {
-			this.urls.push({school: this.config.schools[i], url: 'https://api.mealviewer.com/api/v4/school/' + this.config.schools[i] + '/' + todayFormatted + '/' + endDayFormatted + '/'});
+    for (var i in _this.config.schools) {
+	 // console.log(_this.name + ': setting url: https://api.mealviewer.com/api/v4/school/' + _this.config.schools[i] + '/' + todayFormatted + '/' + endDayFormatted + '/')
+	    		    	
+			_this.urls.push({school: _this.config.schools[i], url: 'https://api.mealviewer.com/api/v4/school/' + _this.config.schools[i] + '/' + todayFormatted + '/' + endDayFormatted + '/'});
+			
     }
 
-    // Trigger the first request
-    this.getMenuData(this);
-  },
 
-  getMenuData: function(_this) {
-    // Make the initial request to the helper then set up the timer to perform the updates
+     // Make the initial request to the helper then set up the timer to perform the updates
     _this.sendSocketNotification('GET-MENU-DATA', _this.urls);
-    setTimeout(_this.getMenuData, _this.config.interval, _this);
+        
+    //11-12-19 Changed to call setupMenuData function to update URL, otherwise it doesn't update correctly. 
+    //console.log(_this.name + ': SetTimeout: ' + _this.config.interval)
+  	
+  	//correction by sdetweil in Magic Mirror forums
+    setTimeout(function() {_this.getMenuData(_this)}, _this.config.interval);
+
+//    setTimeout(_this.getMenuData, _this.config.interval, _this);
   },
 
   getDom: function() {
@@ -109,6 +132,7 @@ Module.register("MMM-MenuViewer",{
 
           //Iterate through the meals and only add for configured meals (match on text from config) default is ALL
 		  for (var l = 0; l < this.results[i].menuSchedules[0].menuBlocks.length; l++) {
+			  	//console.error("ShowMeal: " + this.config.showMeal);
       			  if (this.results[i].menuSchedules[0].menuBlocks[l].blockName == this.config.showMeal || this.config.showMeal == "") {
      						
      						// Set up header row with the meal name if we are showing all meals
