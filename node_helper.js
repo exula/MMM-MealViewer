@@ -10,8 +10,8 @@
  * MIT Licensed.
  */
 
-var NodeHelper = require('node_helper');
-var request = require('request');
+var NodeHelper = require("node_helper");
+var fetch = require("fetch");
 
 module.exports = NodeHelper.create({
 
@@ -20,35 +20,26 @@ module.exports = NodeHelper.create({
   },
 
   getMenuData: function(payload) {
-
-    // The payload should be the request URLs we want to used
-    var urls = payload;
-    var results = [];
-    this.count = 0;
-
-    var _this = this;
+    const self = this;
+    const results = [];
+    let count = 0;
 
     // Iterate through the URLs for the schools and push result to results array
-    for (var i = 0; i < urls.length; i++){
-      request({
-        url: urls[i].url,
-        method: 'GET'
-      }, (error, response, body) => {
-        if (!error && response.statusCode === 200) {
-          var result = JSON.parse(body);
-          results.push(result);
-        }
-        _this.count++;
-
-        if (_this.count === urls.length) {
-          _this.sendSocketNotification('GOT-MENU-DATA', results);
-        }
-      });
+    for (let url of payload) {
+      fetch(url.url)
+        .then((response) => response.json())
+        .then((body) => new Promise((resolve, reject) => {
+          results.push(body);
+          if (++count === payload.length) {
+            self.sendSocketNotification("GOT-MENU-DATA", results);
+          }
+          resolve();
+        }));
     }
   },
 
   socketNotificationReceived: function(notification, payload) {
-    if (notification === 'GET-MENU-DATA') {
+    if (notification === "GET-MENU-DATA") {
       this.getMenuData(payload);
     }
   }
