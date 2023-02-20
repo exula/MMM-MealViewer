@@ -29,7 +29,7 @@ Module.register("MMM-MealViewer", {
   },
 
   getStyles: function() {
-    return ["menuviewer.css", "font-awesome.css"];
+    return ["MMM-MealViewer.css"];
   },
 
   getHeader: function() {
