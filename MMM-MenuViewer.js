@@ -21,11 +21,11 @@
 Module.register("MMM-MenuViewer", {
   defaults: {
     schools: [],
-    shortName: "",
     maxWidth: "300px",
     updateInterval: 15 * 60 * 1000,
     showNextDayHour: 12,
-    showMeal: "Lunch"
+    showMeal: "",
+    hideTypes: [],
   },
 
   getStyles: function() {
@@ -84,6 +84,7 @@ Module.register("MMM-MenuViewer", {
 
     // Iterate through the schools
     for (let school of self.results) {
+      const locationNames = school.physicalLocation.locations.map((loc) => loc.name);
 
       // Iterate through the meals and only add for configured meals (match on text from config) default is ALL
       for (let block of school.menuSchedules[0].menuBlocks) {
@@ -93,11 +94,11 @@ Module.register("MMM-MenuViewer", {
 
         // Set up header row with the meal name if we are showing all meals
         // We may want to revisit this for stlyizing in the future.
-        if (this.config.showMeal == "") {
+        if (this.config.showMeal === "") {
           cafeteriaLineRow = document.createElement("tr");
           cafeteriaLineName = document.createElement("td");
           cafeteriaLineName.colSpan = 2;
-          cafeteriaLineName.className = "menuWrapper small";
+          cafeteriaLineName.className = "small";
           cafeteriaLineName.innerHTML = block.blockName;
           cafeteriaLineRow.appendChild(cafeteriaLineName);
           wrapper.appendChild(cafeteriaLineRow);
@@ -115,25 +116,39 @@ Module.register("MMM-MenuViewer", {
 
           cafeteriaLineName = document.createElement("td");
           cafeteriaLineName.colSpan = 2;
-          cafeteriaLineName.className = "menuWrapper small";
-          cafeteriaLineName.innerHTML = line.name.replace(this.config.shortName + " Elementary", "Elementary Lunch").replace(this.config.shortName  + " Alternative", "Elementary Alternative");
+          cafeteriaLineName.className = "small";
+          cafeteriaLineName.innerHTML = line.name;
 
           cafeteriaLineRow.appendChild(cafeteriaLineName);
           wrapper.appendChild(cafeteriaLineRow);
 
           foodItemTypePrev = "";
 
-          for (let item of line.foodItemList.data) {
-            if (item.item_Name === "Choice Of:") {
-              // The menu returns "Choice of" as an entree option; removing it for neater display
-              continue;
+          const items = line.foodItemList.data.filter((item) => {
+            // The menu returns "Choice of" as an entree option; removing it for neater display
+            if (item.item_Name === "Choice Of") {
+              return false;
             }
 
+            if (self.config.hideTypes.includes(item.item_Type)) {
+              return false;
+            }
+
+            for (let locationName of locationNames) {
+              if (item.menu_Name.includes(locationName)) {
+                return true;
+              }
+            }
+
+            return false;
+          });
+
+          for (let item of items) {
             // Set up row with the menu item type only if it's the first time we've seen the item type (e.g., entree)
             foodItemRow = document.createElement("tr");
 
             foodItemTypeCell = document.createElement("td");
-            foodItemTypeCell.className = "menuWrapper xsmall align-right";
+            foodItemTypeCell.className = "fooditemtype xsmall";
             if (item.item_Type !== foodItemTypePrev) {
               foodItemTypeCell.innerHTML = item.item_Type;
             }
@@ -142,7 +157,7 @@ Module.register("MMM-MenuViewer", {
               item.item_Name = item.item_Name.replace("TODAY", date.day.toUpperCase());
             }
             foodItemNameCell = document.createElement("td");
-            foodItemNameCell.className = "menuWrapper xsmall align-right";
+            foodItemNameCell.className = "xsmall";
             foodItemNameCell.innerHTML = item.item_Name;
 
             foodItemRow.appendChild(foodItemTypeCell);
