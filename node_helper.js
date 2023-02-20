@@ -1,7 +1,7 @@
 /* Node Helper */
 
 /* Magic Mirror
- * Module: MMM-MenuViewer
+ * Module: MMM-MealViewer
  *
  * A Magic Mirror Module to pull school lunch menu data from mealviewer.com
  *

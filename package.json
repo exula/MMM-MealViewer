@@ -1,10 +1,10 @@
 {
-          "name": "MMM-MenuViewer",
+          "name": "MMM-MealViewer",
           "version": "1.1.0",
           "description": "A Magic Mirror Module to pull school lunch menu data from mealviewer.com.",
           "repository": {
                     "type": "git",
-                    "url": "git+https://github.com/kazanjig/MMM-MenuViewer"
+                    "url": "git+https://github.com/kolbyjack/MMM-MealViewer"
           },
           "keywords": [
                     "magic mirror",
@@ -16,12 +16,12 @@
                     "mealviewer"
           ],
           "author": "Jerry Kazanjian",
-          "contributors": "https://github.com/kazanjig/MMM-MenuViewer/graphs/contributors",
+          "contributors": "https://github.com/kolbyjack/MMM-MealViewer/graphs/contributors",
           "license": "MIT",
           "bugs": {
-                    "url": "https://github.com/kazanjig/MMM-MenuViewer/issues"
+                    "url": "https://github.com/kolbyjack/MMM-MealViewer/issues"
           },
-          "homepage": "https://github.com/kazanjig/MMM-MenuViewer#readme",
+          "homepage": "https://github.com/kolbyjack/MMM-MealViewer#readme",
           "dependencies": {
                     "request": "latest"
           }

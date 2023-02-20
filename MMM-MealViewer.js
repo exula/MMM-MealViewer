@@ -1,7 +1,7 @@
 /* Module */
 
 /* Magic Mirror
- * Module: MMM-MenuViewer
+ * Module: MMM-MealViewer
  *
  * A Magic Mirror Module to pull school lunch menu data from mealviewer.com
  *
@@ -18,7 +18,7 @@
  *  fixed so that updates work. Moved URL setup code is in getMenuData and fixed the setTimeout to  *   work correctly. Thanks sdetweil!
   */
 
-Module.register("MMM-MenuViewer", {
+Module.register("MMM-MealViewer", {
   defaults: {
     schools: [],
     maxWidth: "300px",
