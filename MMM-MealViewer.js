@@ -18,13 +18,24 @@
  *  fixed so that updates work. Moved URL setup code is in getMenuData and fixed the setTimeout to  *   work correctly. Thanks sdetweil!
   */
 
+function el(tag, options) {
+  const result = document.createElement(tag);
+
+  options = options || {};
+  for (const key in options) {
+    result[key] = options[key];
+  }
+
+  return result;
+}
+
 Module.register("MMM-MealViewer", {
   defaults: {
     schools: [],
     maxWidth: "300px",
     updateInterval: 15 * 60 * 1000,
     showNextDayHour: 12,
-    showMeal: "",
+    showMeal: null,
     hideTypes: [],
   },
 
@@ -69,39 +80,39 @@ Module.register("MMM-MealViewer", {
     const self = this;
     const date = self.getMenuDate();
     const showMeal = self.config.showMeal;
-    let wrapper = null;
+    let row, cell;
 
     if (!self.loaded) {
       // While the data is loading
-      wrapper = document.createElement("div");
-      wrapper.innerHTML = this.translate("LOADING");
-      wrapper.className = "dimmed light small";
-      return wrapper;
+      return el("div", { innerHTML: this.translate("LOADING"), className: "dimmed light small" });
     }
 
-    wrapper = document.createElement("table");
-    wrapper.className = "menuWrapper";
+    const wrapper = el("table", { className: "menuWrapper" });
 
     // Iterate through the schools
     for (let school of self.results) {
       const locationNames = school.physicalLocation.locations.map((loc) => loc.name);
 
+      if (self.showSchoolHeaders()) {
+        row = el("tr");
+        cell = el("td", { colSpan: 2, className: "small", innerHTML: school.physicalLocation.name });
+        row.appendChild(cell);
+        wrapper.appendChild(row);
+      }
+
       // Iterate through the meals and only add for configured meals (match on text from config) default is ALL
       for (let block of school.menuSchedules[0].menuBlocks) {
-        if ((showMeal !== "") && (block.blockName !== showMeal)) {
+        if (!self.showBlock(block)) {
           continue;
         }
 
         // Set up header row with the meal name if we are showing all meals
         // We may want to revisit this for stlyizing in the future.
-        if (this.config.showMeal === "") {
-          cafeteriaLineRow = document.createElement("tr");
-          cafeteriaLineName = document.createElement("td");
-          cafeteriaLineName.colSpan = 2;
-          cafeteriaLineName.className = "small";
-          cafeteriaLineName.innerHTML = block.blockName;
-          cafeteriaLineRow.appendChild(cafeteriaLineName);
-          wrapper.appendChild(cafeteriaLineRow);
+        if (self.showMealHeaders()) {
+          row = el("tr");
+          cell = el("td", { colSpan: 2, className: "small", innerHTML: block.blockName });
+          row.appendChild(cell);
+          wrapper.appendChild(row);
         }
 
         for (let line of block.cafeteriaLineList.data) {
@@ -111,18 +122,13 @@ Module.register("MMM-MealViewer", {
           }
 
           // Set up header row with the cafeteria line name
-          //This isn't in every schol, but it might need to be moved for someone else. Not affecting my view -NG
-          cafeteriaLineRow = document.createElement("tr");
+          // This isn't in every school, but it might need to be moved for someone else. Not affecting my view -NG
+          row = el("tr");
+          cell = el("td", { colSpan: 2, className: "small", innerHTML: line.name });
+          row.appendChild(cell);
+          wrapper.appendChild(row);
 
-          cafeteriaLineName = document.createElement("td");
-          cafeteriaLineName.colSpan = 2;
-          cafeteriaLineName.className = "small";
-          cafeteriaLineName.innerHTML = line.name;
-
-          cafeteriaLineRow.appendChild(cafeteriaLineName);
-          wrapper.appendChild(cafeteriaLineRow);
-
-          foodItemTypePrev = "";
+          let lastFoodItemType = null;
 
           const items = line.foodItemList.data.filter((item) => {
             // The menu returns "Choice of" as an entree option; removing it for neater display
@@ -145,25 +151,22 @@ Module.register("MMM-MealViewer", {
 
           for (let item of items) {
             // Set up row with the menu item type only if it's the first time we've seen the item type (e.g., entree)
-            foodItemRow = document.createElement("tr");
+            row = el("tr");
 
-            foodItemTypeCell = document.createElement("td");
-            foodItemTypeCell.className = "fooditemtype xsmall";
-            if (item.item_Type !== foodItemTypePrev) {
-              foodItemTypeCell.innerHTML = item.item_Type;
+            cell = el("td", { className: "fooditemtype xsmall" });
+            if (item.item_Type !== lastFoodItemType) {
+              cell.innerHTML = item.item_Type;
             }
+            row.appendChild(cell);
 
             if ((!date.today) && (item.item_Name == "NO SCHOOL TODAY")) {
               item.item_Name = item.item_Name.replace("TODAY", date.day.toUpperCase());
             }
-            foodItemNameCell = document.createElement("td");
-            foodItemNameCell.className = "xsmall";
-            foodItemNameCell.innerHTML = item.item_Name;
+            cell = el("td", { className: "xsmall", innerHTML: item.item_Name });
+            row.appendChild(cell);
 
-            foodItemRow.appendChild(foodItemTypeCell);
-            foodItemRow.appendChild(foodItemNameCell);
-            wrapper.appendChild(foodItemRow);
-            foodItemTypePrev = item.item_Type;
+            wrapper.appendChild(row);
+            lastFoodItemType = item.item_Type;
           }
         }
       }
@@ -204,5 +207,41 @@ Module.register("MMM-MealViewer", {
       "day": day,
       "today": (today === date.getDate())
     };
+  },
+
+  showSchoolHeaders: function(school) {
+    return (this.config.schools.length > 1);
+  },
+
+  showBlock: function(block) {
+    const showMeal = this.config.showMeal;
+
+    if ((showMeal === null) || (showMeal === "")) {
+      return true;
+    }
+
+    if (block.blockName === showMeal) {
+      return true;
+    }
+
+    if (Array.isArray(showMeal) && showMeal.includes(block.blockName)) {
+      return true;
+    }
+
+    return false;
+  },
+
+  showMealHeaders: function() {
+    const showMeal = this.config.showMeal;
+
+    if ((showMeal === null) || (showMeal === "")) {
+      return true;
+    }
+
+    if (Array.isArray(showMeal) && (showMeal.length > 1)) {
+      return true;
+    }
+
+    return false;
   },
 });
