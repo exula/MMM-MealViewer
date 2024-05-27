@@ -10,8 +10,7 @@
  * MIT Licensed.
  */
 
-var NodeHelper = require("node_helper");
-var fetch = require("fetch");
+const NodeHelper = require("node_helper");
 
 module.exports = NodeHelper.create({
 
