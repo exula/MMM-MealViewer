@@ -129,13 +129,11 @@ Module.register("MMM-MealViewer", {
           wrapper.appendChild(row);
 
           let lastFoodItemType = null;
-
           const items = line.foodItemList.data.filter((item) => {
             // The menu returns "Choice of" as an entree option; removing it for neater display
             if (item.item_Name === "Choice Of") {
               return false;
             }
-
             if (self.config.hideTypes.includes(item.item_Type)) {
               return false;
             }
@@ -144,6 +142,10 @@ Module.register("MMM-MealViewer", {
               if (item.menu_Name.includes(locationName)) {
                 return true;
               }
+            }
+            // If there is no location name, show the menu
+            if (item.location_Name == null) {
+              return true;
             }
 
             return false;
@@ -171,7 +173,7 @@ Module.register("MMM-MealViewer", {
         }
       }
     }
-
+    console.log(wrapper);
     return wrapper;
   },
 
